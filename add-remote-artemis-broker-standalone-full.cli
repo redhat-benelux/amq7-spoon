@@ -1,0 +1,24 @@
+# Batch script to add remote artemis broker in the JBoss EAP Server
+# Please refer to https://wildscribe.github.io/JBoss%20EAP/7.2/index.html
+# Start batching commands
+batch
+
+/subsystem=messaging-activemq/server=default/remote-connector=remote-artemis:add(socket-binding="remote-artemis")
+/:reload
+
+
+/subsystem=messaging-activemq/server=default/pooled-connection-factory=remote-artemis:add(connectors=[remote-artemis],entries=[java:/RemoteJmsXA,java:jboss/RemoteJmsXA],ha="false",user="admin",password="passw0rd",min-pool-size="15",max-pool-size="30",rebalance-connections="true",setup-attempts="-1",setup-interval="5000",statistics-enabled="true")
+/:reload
+
+/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=remote-artemis:add(host="node-0.rahmed.lab.pnq2.cee.redhat.com",port="6161")
+/:reload
+
+/subsystem=naming/binding="java:global/remoteContext":add(binding-type=external-context, module="org.apache.activemq.artemis", class="javax.naming.InitialContext",environment=[java.naming.factory.initial=org.apache.activemq.artemis.jndi.ActiveMQInitialContextFactory, java.naming.provider.url=tcp://node-0.rahmed.lab.pnq2.cee.redhat.com:6161, connectionFactory.ConnectionFactory=tcp://node-0.rahmed.lab.pnq2.cee.redhat.com:6161, queue.demoQueue=demo.demoQueue])
+
+/:reload
+
+
+run-batch
+
+# Reload the server configuration
+reload
