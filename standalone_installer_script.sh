@@ -2,7 +2,7 @@
 
 # TODO https://github.com/apache/activemq-artemis/blob/330b6b70b90954324f9dad4a7a2d21e0de5747cf/docs/user-manual/en/clusters.md#configuring-cluster-connections
 
-#set -x
+set -x
 # Variables here you go
 
 MASTER_HOST=node-0.rahmed.lab.pnq2.cee.redhat.com
@@ -12,7 +12,7 @@ CONSOLE_PORT=8161
 CLUSTER_CONNECTION_NAME=amq_cluster_configuration
 
 # Variables that should not change
-PRODUCT_HOME=/home/quicklab/amq-broker-7.8.0
+PRODUCT_HOME=/home/rahmed/amq7/amq-broker-7.8.0
 
 AMQ_SERVER_CONF=$PRODUCT_HOME/etc
 AMQ_SERVER_BIN=$PRODUCT_HOME/bin
@@ -196,8 +196,10 @@ create_linux_service () {
 	echo "  -Creating Linux Service "
 	echo
 
-
-	/bin/cat <<EOM >$AMQ_SERVICE_FILE
+sudo touch $AMQ_SERVICE_FILE
+sudo chmod 0777 $AMQ_SERVICE_FILE
+sudo chown root:root $AMQ_SERVICE_FILE
+sudo cat <<EOF >$AMQ_SERVICE_FILE
 [Unit]
 Description=AMQ Broker
 After=syslog.target network.target
@@ -205,8 +207,8 @@ After=syslog.target network.target
 [Service]
 ExecStart="$AMQ_MASTER_HOME/bin/artemis run"
 Restart=on-failure
-User=amq-broker
-Group=amq-broker
+User=rahmed
+Group=rahmed
 Restart=always
 StartLimitInterval=200
 StartLimitBurst=5
@@ -217,8 +219,10 @@ SuccessExitStatus=143
 
 [Install]
 WantedBy=multi-user.target
-EOM
+EOF
+sudo chmod 0644 $AMQ_SERVICE_FILE
 
+sudo systemctl daemon-reload
 sudo systemctl enable "$AMQ_SERVICE_NAME"
 sudo systemctl start "$AMQ_SERVICE_NAME"
 
@@ -289,7 +293,7 @@ case "$1" in
 	echo "   create_amq_broker : create a broker instance"
 	echo "   create_user : create messaging user with snd_poc_role,rcv_poc_role,mng_poc_role which allows you to send, recieve & manage"
 	echo "   add_console_access_to_user : Allow user to have access to Console, it use user created in create_user step"
-	echo "   create_linux_service : Create a Linux Service to manage the AMQ 
+	echo "   create_linux_service : Create a Linux Service to manage the AMQ "
 	echo "Green & Clean .. Deal"
 	echo "===================================================================#"
     exit 1
